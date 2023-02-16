@@ -42,7 +42,7 @@ void setup()
   // Configuración hardaware.
   pinMode(LED_BUILTIN, OUTPUT);
   Serial.begin(115200);
-  pinMode(PINPULSADOR, INPUT);
+  pinMode(PINPULSADOR, INPUT_PULLUP);
   pinMode(PINLED, OUTPUT);
 }
 
@@ -61,7 +61,7 @@ void loop()
 #if defined(EJEMPLO2)
   // Tiempo encendido != Tiempo apagado
   digitalWrite(LED_BUILTIN, HIGH);
-  Serial.println(F("Led encendido"));
+  Serial.println(F("Led encendido."));
   delay(250);
   digitalWrite(LED_BUILTIN, LOW);
   Serial.println(F("Led apagado"));
@@ -76,12 +76,12 @@ void loop()
   if (pulsado)
   {
     // Si Pulsado = 1 (True) ponemos a (HIGH) el pin
-    digitalWrite(PINLED, HIGH);
+    digitalWrite(PINLED, LOW);
   }
   else
   {
     // Si Pulsado = 0 (False) ponemos a (LOW) el pin
-    digitalWrite(PINLED, LOW);
+    digitalWrite(PINLED, HIGH);
   }
 #endif
 
@@ -96,7 +96,7 @@ void loop()
     {
       // Si estaba en repososo y lo han pulsado, lo marcamos como pulsado
       // y cambiamos el estado del led.
-      activo = true;
+      activo = false;
       cambiaEstado();
     }
   }
@@ -107,7 +107,7 @@ void loop()
     if (!pulsado)
     {
       // Si estaba en pulsado y lo han soltado, lo marcamos como inactivo (sin pulsar)
-      activo = false;
+      activo = true;
     }
   }
 
