@@ -12,7 +12,7 @@ Ejemplo 4:
   El pulsador se utiliza para cambiar el estado del led.
   Cada vez que se pulsa cambia de estado. De esta forma
   al pulsarlo la primera vez el led se enciende y permanece
-  encendido aunque se suelte el pulsador hasta la siguiente 
+  encendido aunque se suelte el pulsador hasta la siguiente
   pulsación.
   Con la nueva pulsación el led se apaga y permanece apagado
   hasta la siguiente pulsación.
@@ -26,16 +26,20 @@ Para poder entender lo que pasa montar primero el pulsador solo
 y probar. Después montar el circuito antirebotes y volver a probar
 */
 #include <Arduino.h>
-#define EJEMPLO4          // Selecciona el ejemplo a compilar
+#define EJEMPLO5 // Selecciona el ejemplo a compilar
+#define SEGUNDOSESPERA 5000
 
-#define PINPULSADOR DD4   // El pulsador se conecta a D4
-#define PINLED      DD2   // El led se conecta a D2
+#define PINPULSADOR DD4 // El pulsador se conecta a D4
+#define PINLED DD2      // El led se conecta a D2
 
 void cambiaEstado();
 
-bool pulsado;       // Lectura del estado del pulsador (True = pulsado/ False = Sin pulsar)
-bool activo;        // Último estado del pulsador 
-bool encendido;     // Estado del led.
+bool pulsado;   // Lectura del estado del pulsador (True = pulsado/ False = Sin pulsar)
+bool activo;    // Último estado del pulsador
+bool encendido; // Estado del led.
+unsigned long siguienteMuestra;
+bool estadoPulsador;
+int contador = 0;
 
 void setup()
 {
@@ -44,6 +48,9 @@ void setup()
   Serial.begin(115200);
   pinMode(PINPULSADOR, INPUT_PULLUP);
   pinMode(PINLED, OUTPUT);
+
+  // Tiempo para mostrar el contador.
+  siguienteMuestra = millis() + SEGUNDOSESPERA;
 }
 
 void loop()
@@ -72,15 +79,19 @@ void loop()
   // Guardamos en "pulsado el estado del pulsador"
   pulsado = digitalRead(PINPULSADOR);
 
+  // Como tenemos conectado el pulsador a una entrada PULL_UP
+  // Mientras no pulsemos la entrada estará leyendo un 1 (HIGH)
+  // al pulsar la entrada se pone a 0 (LOW)
+
   // En función del estado hacemos cosas distintas.
   if (pulsado)
   {
-    // Si Pulsado = 1 (True) ponemos a (HIGH) el pin
+    // Si Pulsado = 1 (True) ponemos a (LOW) el pin
     digitalWrite(PINLED, LOW);
   }
   else
   {
-    // Si Pulsado = 0 (False) ponemos a (LOW) el pin
+    // Si Pulsado = 0 (False) ponemos a (HIGH) el pin
     digitalWrite(PINLED, HIGH);
   }
 #endif
@@ -109,6 +120,39 @@ void loop()
       // Si estaba en pulsado y lo han soltado, lo marcamos como inactivo (sin pulsar)
       activo = true;
     }
+  }
+
+#endif
+
+#if defined(EJEMPLO5)
+  // Leenos el pulsador.
+  estadoPulsador = !digitalRead(PINPULSADOR);
+  if (pulsado)
+  {
+    // En la anterior lectura estaba pulsado. Comprobamos si se ha soltado.
+    if (!estadoPulsador)
+    {
+      pulsado = false;
+      // Si estamos en el módulo B de la lección 2 añadimos un retraso de 50 ms para no leer "rebotes"
+#if defined(MODULOB)
+      delay(50);
+#endif
+    }
+  }
+  else
+  {
+    // En la anterior lectura estaba sin pulsar. Comprobamos si se ha pulsado.
+    if (estadoPulsador)
+    {
+      contador++;
+      pulsado = true;
+    }
+  }
+  if (millis() >= siguienteMuestra)
+  {
+    Serial.print(F("El número de pulsaciones actual es "));
+    Serial.println(contador);
+    siguienteMuestra = millis() + SEGUNDOSESPERA;
   }
 
 #endif
